@@ -1,40 +1,48 @@
-import{ Sequelize ,DataTypes} from "sequelize";
-//database connection
-const sequelize = new Sequelize("product_db","dev_user","dev_password",{
-    host: "localhost",
-    port: 5436,
-    dialect: "postgres",
-    logging: false,
+import { Sequelize, DataTypes } from "sequelize";
+
+const dbName = process.env.PGDATABASE;
+const dbUserName = process.env.PGUSER;
+const dbPassword = process.env.PGPASSWORD;
+const dbURL = process.env.PGHOST;
+
+// database connection - fixed the "Sequelize" typo
+const sequelize = new Sequelize(dbName, dbUserName, dbPassword, {
+  host: dbURL,
+  port: 5435,
+  dialect: "postgres",
+  logging: false,
+  dialectOption: {
+    ssl: { require: true, rejectUnautherized: false },
+  },
 });
 
-//define database schema
-const Product = sequelize.define("Product",{
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    price: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-    }
+// define database schema
+const Product = sequelize.define("Product", {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  price: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
 });
 
 const connectDB = async () => {
-    try {
-        await sequelize.authenticate();
-        console.log(" connected to postgresSQL!!!");
-        await sequelize.sync({ alter: true });
-        console.log("Table synchronized ");
-    }
-    catch (error) {
-        console.error("Connection failed", error);
-        process.exit(1);
-    }
-
+  try {
+    await sequelize.authenticate();
+    console.log("Connected to PostgreSQL!!");
+    await sequelize.sync({ alter: true });
+    console.log("Table synchronized!");
+  } catch (error) {
+    console.error("Connection failed", error);
+    process.exit(1);
+  }
 };
+
 export { sequelize, Product, connectDB };
